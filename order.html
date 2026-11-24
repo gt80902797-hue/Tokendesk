@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10243a">
+  <title>Place an Order | TokenDesk</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="order.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark">T</span><span>TokenDesk</span></a><span class="top-tag">Customer order</span></header>
+  <main class="narrow-container">
+    <section class="panel customer-panel">
+      <p class="eyebrow">CUSTOMER ORDER FORM</p>
+      <h1 id="shopTitle">Loading shop…</h1>
+      <p class="muted">Apna naam aur order likhkar dukaan ko bhejein. Account banane ki zaroorat nahi hai.</p>
+      <form id="orderForm" class="form-stack">
+        <label>Your name / आपका नाम<input id="customerName" required minlength="2" maxlength="120" autocomplete="name" placeholder="अपना नाम लिखें"></label>
+        <label>What would you like to order? / आपका ऑर्डर<textarea id="description" required maxlength="2000" rows="5" placeholder="अपना ऑर्डर यहाँ लिखें…"></textarea></label>
+        <button id="voiceBtn" class="secondary-btn voice-btn" type="button">🎙️ Hindi voice input</button>
+        <p id="voiceMessage" class="small muted" aria-live="polite">Voice input ke liye microphone permission allow karein.</p>
+        <button id="placeOrderBtn" class="primary-btn" type="submit">Place order</button>
+      </form>
+      <p id="orderMessage" class="message" role="status"></p>
+      <div id="successPanel" class="success-panel hidden">
+        <p class="eyebrow">ORDER RECEIVED</p><h2>Your order token</h2>
+        <div id="generatedToken" class="big-token"></div>
+        <p class="muted">Is token ko sambhal kar rakhein. Isse aap order ka status check kar sakte hain.</p>
+        <a id="trackLink" class="primary-btn button-link" href="#">Track my order</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

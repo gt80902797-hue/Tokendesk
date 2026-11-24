@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10243a">
+  <title>Track Order | TokenDesk</title>
+  <link rel="stylesheet" href="style.css"><script src="track.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark">T</span><span>TokenDesk</span></a><span class="top-tag">Order tracking</span></header>
+  <main class="narrow-container">
+    <section class="panel customer-panel">
+      <p class="eyebrow">ORDER TRACKING</p><h1>Track your order</h1>
+      <p class="muted">Apna order token enter karein. Aapko sirf apne order ka status dikhega.</p>
+      <form id="trackForm" class="form-stack">
+        <label>Order token<input id="orderToken" required placeholder="TD-XXXXXXXXXXXX" autocomplete="off"></label>
+        <button class="primary-btn" type="submit">Check order status</button>
+      </form>
+      <p id="trackMessage" class="message" role="status"></p>
+      <div id="trackResult" class="track-result hidden">
+        <p class="muted small">SHOP</p><h2 id="trackedShop"></h2>
+        <p class="muted small">ORDER TOKEN</p><div id="trackedToken" class="order-token"></div>
+        <div id="statusTimeline" class="timeline"></div>
+        <p id="lastUpdate" class="muted small"></p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

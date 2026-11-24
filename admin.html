@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10243a">
+  <title>TokenDesk | Admin payment verification</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="admin.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-mark">T</span><span>TokenDesk</span></a>
+    <span class="top-tag">Private admin area</span>
+  </header>
+  <main class="narrow-container">
+    <section class="panel">
+      <p class="eyebrow">OWNER ONLY</p>
+      <h1>Payment verification</h1>
+      <p class="muted">Use this page only after checking that the exact payment has arrived in the receiving UPI/bank account. Never approve based only on a screenshot or a WhatsApp claim.</p>
+      <form id="adminLoginForm" class="form-stack">
+        <label>Admin secret<input id="adminSecret" type="password" autocomplete="off" required minlength="32" placeholder="Enter the private ADMIN_SECRET"></label>
+        <button class="primary-btn" type="submit">Open pending requests</button>
+      </form>
+      <p id="adminMessage" class="message" role="status"></p>
+    </section>
+    <section id="requestsPanel" class="panel hidden">
+      <div class="section-heading"><div><p class="eyebrow">PENDING PAYMENTS</p><h2>Subscription requests</h2></div><button id="reloadRequests" class="secondary-btn" type="button">Refresh</button></div>
+      <div id="requestsList" class="orders-list"><p class="muted">No requests loaded.</p></div>
+    </section>
+    <section id="issuedPanel" class="panel hidden">
+      <p class="eyebrow">ONE-TIME ACTIVATION CODE</p>
+      <h2>Code generated</h2>
+      <p class="muted">Copy this code and send it to the matching shop owner on WhatsApp. This is the only time the raw code is displayed.</p>
+      <div class="admin-code" id="issuedCode"></div>
+      <button id="copyIssuedCode" class="primary-btn" type="button">Copy activation code</button>
+      <p id="issuedDetails" class="message"></p>
+    </section>
+    <p class="footer-note">Do not share your admin secret. It is not part of the website source and must stay in Render environment variables.</p>
+  </main>
+</body>
+</html>
