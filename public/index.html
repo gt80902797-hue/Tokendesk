@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,6 +16,26 @@
   </header>
 
   <main class="container">
+
+    <!-- CUSTOMER ORDER TRACKING -->
+    <section class="panel" id="trackingArea">
+      <p class="eyebrow">CUSTOMER SERVICE</p>
+      <h2>Track Your Order</h2>
+      <p class="muted">Enter your shop code and order token to check your order status.</p>
+
+      <form id="trackingForm" class="form-stack">
+        <label>Shop Code
+          <input id="trackingShopCode" required maxlength="100" placeholder="Enter shop code">
+        </label>
+        <label>Order Token
+          <input id="trackingToken" required maxlength="100" placeholder="Enter your order token">
+        </label>
+        <button class="primary-btn" id="trackOrderBtn" type="submit">Track Order</button>
+      </form>
+
+      <div id="trackingResult" class="message" role="status" aria-live="polite"></div>
+    </section>
+
     <section id="authArea" class="auth-grid">
       <div class="intro-card">
         <p class="eyebrow">SIMPLE ORDER MANAGEMENT</p>
@@ -22,14 +43,20 @@
         <p class="muted intro-copy">Receive customer orders, manage their progress and share your shop's order link.</p>
         <div class="feature-pills"><span>Customer order link</span><span>Unique tokens</span><span>Order tracking</span></div>
       </div>
+
       <div class="panel auth-panel">
-        <div class="tabs"><button type="button" class="tab active" id="showLogin">Login</button><button type="button" class="tab" id="showRegister">Register shop</button></div>
+        <div class="tabs">
+          <button type="button" class="tab active" id="showLogin">Login</button>
+          <button type="button" class="tab" id="showRegister">Register shop</button>
+        </div>
+
         <form id="loginForm" class="form-stack">
           <h2>Welcome back</h2>
           <label>Email<input id="loginEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label>
           <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Your password"></label>
           <button class="primary-btn" type="submit">Login to dashboard</button>
         </form>
+
         <form id="registerForm" class="form-stack hidden">
           <h2>Register your shop</h2>
           <label>Shop name<input id="shopName" required minlength="2" maxlength="100" placeholder="Your shop name"></label>
@@ -44,31 +71,70 @@
 
     <section id="dashboard" class="hidden">
       <div class="welcome-row">
-        <div><p class="eyebrow">SHOP DASHBOARD</p><h1 id="welcomeTitle">Your shop</h1><p class="muted">Manage incoming customer orders from one place.</p></div>
+        <div>
+          <p class="eyebrow">SHOP DASHBOARD</p>
+          <h1 id="welcomeTitle">Your shop</h1>
+          <p class="muted">Manage incoming customer orders from one place.</p>
+        </div>
         <button id="logoutBtn" class="secondary-btn" type="button">Logout</button>
       </div>
 
       <section class="panel share-panel">
-        <div class="section-heading"><div><p class="eyebrow">CUSTOMER ORDER LINK</p><h2>Let customers order from their phone</h2></div><span class="status-chip">Your shop link</span></div>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">CUSTOMER ORDER LINK</p>
+            <h2>Let customers order from their phone</h2>
+          </div>
+          <span class="status-chip">Your shop link</span>
+        </div>
         <p class="muted">Share this link with customers or show its QR code in your shop.</p>
-        <div class="link-row"><input id="shopLink" readonly aria-label="Your customer order link"><button id="copyLinkBtn" class="primary-btn" type="button">Copy link</button></div>
-        <div class="qr-area"><div id="qrCode" class="qr-box" aria-label="Shop QR code"></div><div><strong>Scan to place an order</strong><p class="muted small">Customers can open your order page without creating an account.</p><button id="shareLinkBtn" class="secondary-btn" type="button">Share link</button></div></div>
+        <div class="link-row">
+          <input id="shopLink" readonly aria-label="Your customer order link">
+          <button id="copyLinkBtn" class="primary-btn" type="button">Copy link</button>
+        </div>
+        <div class="qr-area">
+          <div id="qrCode" class="qr-box" aria-label="Shop QR code"></div>
+          <div>
+            <strong>Scan to place an order</strong>
+            <p class="muted small">Customers can open your order page without creating an account.</p>
+            <button id="shareLinkBtn" class="secondary-btn" type="button">Share link</button>
+          </div>
+        </div>
       </section>
 
       <section class="panel">
-        <div class="section-heading"><div><p class="eyebrow">ORDERS</p><h2>Shop orders</h2></div><button id="refreshBtn" class="secondary-btn" type="button">Refresh</button></div>
+        <div class="section-heading">
+          <div><p class="eyebrow">ORDERS</p><h2>Shop orders</h2></div>
+          <button id="refreshBtn" class="secondary-btn" type="button">Refresh</button>
+        </div>
         <p id="ordersMessage" class="message" role="status"></p>
         <div id="ordersList" class="orders-list"><p class="muted">Loading orders…</p></div>
       </section>
 
       <section class="panel plans-panel">
-        <p class="eyebrow">SUBSCRIPTION</p><h2>Choose a plan</h2>
+        <p class="eyebrow">SUBSCRIPTION</p>
+        <h2>Choose a plan</h2>
         <p id="subscriptionStatus" class="message" role="status">Checking subscription…</p>
+
         <div class="plans-grid">
-          <article class="plan-card"><h3>30 days</h3><p class="price">₹100</p><p class="muted small">30-day access</p><button class="primary-btn plan-buy-btn" type="button" data-plan-days="30">Continue</button></article>
-          <article class="plan-card featured"><span class="popular-label">POPULAR</span><h3>90 days</h3><p class="price">₹270</p><p class="muted small">90-day access</p><button class="primary-btn plan-buy-btn" type="button" data-plan-days="90">Continue</button></article>
-          <article class="plan-card"><h3>365 days</h3><p class="price">₹999</p><p class="muted small">365-day access</p><button class="primary-btn plan-buy-btn" type="button" data-plan-days="365">Continue</button></article>
+          <article class="plan-card">
+            <h3>30 days</h3><p class="price">₹100</p>
+            <p class="muted small">30-day access</p>
+            <button class="primary-btn plan-buy-btn" type="button" data-plan-days="30">Continue</button>
+          </article>
+          <article class="plan-card featured">
+            <span class="popular-label">POPULAR</span>
+            <h3>90 days</h3><p class="price">₹270</p>
+            <p class="muted small">90-day access</p>
+            <button class="primary-btn plan-buy-btn" type="button" data-plan-days="90">Continue</button>
+          </article>
+          <article class="plan-card">
+            <h3>365 days</h3><p class="price">₹999</p>
+            <p class="muted small">365-day access</p>
+            <button class="primary-btn plan-buy-btn" type="button" data-plan-days="365">Continue</button>
+          </article>
         </div>
+
         <div id="subscriptionCheckout" class="checkout-panel hidden">
           <h3 id="checkoutTitle">Complete payment</h3>
           <p class="muted">Apne UPI app mein mobile-number payment ka option chunein. Number aur receiver ka naam verify kiye bina payment na karein. Har UPI app mobile-number payment support nahi karta.</p>
@@ -80,10 +146,14 @@
           </div>
           <p class="notice">After paying, send your UPI transaction reference/UTR on WhatsApp. Your plan will NOT activate from a screenshot or button click. The payment will be checked manually, and an activation code will be issued only after the money is received.</p>
         </div>
+
         <div class="activation-panel">
           <h3>Have an activation code?</h3>
           <p class="muted small">Enter the one-time code sent to you after payment verification.</p>
-          <div class="link-row"><input id="activationCodeInput" maxlength="16" autocomplete="one-time-code" placeholder="16-character code" aria-label="Activation code"><button id="activateCodeBtn" class="primary-btn" type="button">Activate plan</button></div>
+          <div class="link-row">
+            <input id="activationCodeInput" maxlength="16" autocomplete="one-time-code" placeholder="16-character code" aria-label="Activation code">
+            <button id="activateCodeBtn" class="primary-btn" type="button">Activate plan</button>
+          </div>
           <p id="activationMessage" class="message" role="status"></p>
         </div>
         <p class="footer-note">Activation codes are random, shop-specific, expire in 30 minutes and can only be used once.</p>
@@ -91,6 +161,8 @@
       <p class="footer-note">Keep your login password private. Customer tracking shows order status only.</p>
     </section>
   </main>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
-</html>
+              </html>
+              
