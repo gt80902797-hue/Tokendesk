@@ -1,15 +1,17 @@
+
 {
-  "name": "tokendesk-secure",
+  "name": "tokendesk-backend",
   "version": "1.0.0",
-  "description": "TokenDesk secure subscription backend scaffold",
-  "main": "server.js",
-  "scripts": {"start": "node server.js"},
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^11.5.0",
     "express": "^4.21.2",
-    "express-session": "^1.18.1",
     "helmet": "^8.0.0",
+    "express-rate-limit": "^7.5.0",
+    "pg": "^8.13.1",
     "razorpay": "^2.9.5"
   }
 }
