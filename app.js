@@ -1,7 +1,156 @@
-const $=id=>document.getElementById(id);function show(which){$("login").hidden=which!=="login";$("register").hidden=which!=="register";$("msg").textContent=""}
-async function api(url,opts={}){const r=await fetch(url,{...opts,headers:{"Content-Type":"application/json",...(opts.headers||{})},credentials:"same-origin"});let d={};try{d=await r.json()}catch{}if(!r.ok)throw Error(d.error||"Request failed");return d}
-$("login").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{await api("/api/login",{method:"POST",body:JSON.stringify(Object.fromEntries(f))});await refresh()}catch(x){$("msg").textContent=x.message}}
-$("register").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{await api("/api/register",{method:"POST",body:JSON.stringify(Object.fromEntries(f))});await refresh()}catch(x){$("msg").textContent=x.message}}
-async function refresh(){try{const me=await api("/api/me");$("auth").hidden=true;$("dashboard").hidden=false;$("shop").textContent=me.shop_name;const exp=me.subscription_until?new Date(me.subscription_until*1000).toLocaleDateString():"Not active";$("status").textContent="Subscription: "+(me.active&&me.subscription_until>Date.now()/1000?"Active":"Inactive")+" • Expiry: "+exp;const payments=await api("/api/payments");$("payments").innerHTML=payments.map(p=>`<li>₹${p.amount/100} • ${p.plan} days • ${p.status}</li>`).join("")||"<li>No payments yet</li>"}catch{$("auth").hidden=false;$("dashboard").hidden=true}}
-async function pay(plan){$("dashmsg").textContent="";try{const order=await api("/api/payment/order",{method:"POST",body:JSON.stringify({plan})});if(!window.Razorpay)throw Error("Checkout library unavailable");const checkout=new Razorpay({key:order.keyId,amount:order.amount,currency:order.currency,order_id:order.orderId,name:"TokenDesk",description:plan+" day subscription",handler:async response=>{try{await api("/api/payment/verify",{method:"POST",body:JSON.stringify({orderId:response.razorpay_order_id,paymentId:response.razorpay_payment_id,signature:response.razorpay_signature})});$("dashmsg").textContent="Verified payment. Subscription activated.";await refresh()}catch(e){$("dashmsg").textContent="Payment received, but verification pending/failed. Contact support; do not retry blindly."}},modal:{ondismiss:()=>{$("dashmsg").textContent="Payment window closed. Subscription remains inactive until verified."}}});checkout.open()}catch(e){$("dashmsg").textContent=e.message}}
-async function logout(){await api("/api/logout",{method:"POST"});refresh()}refresh();
+
+const API = "https://tokendesk.onrender.com";
+
+let token = localStorage.getItem("tokendesk_token");
+
+const auth = document.getElementById("auth");
+const dashboard = document.getElementById("dashboard");
+const msg = document.getElementById("msg");
+const dashmsg = document.getElementById("dashmsg");
+
+function show(type) {
+  document.getElementById("login").hidden = type !== "login";
+  document.getElementById("register").hidden = type !== "register";
+  msg.textContent = "";
+}
+
+async function request(path, options = {}) {
+  const response = await fetch(API + path, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: "Bearer " + token } : {}),
+      ...(options.headers || {})
+    }
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message || data.error || "Request failed");
+  }
+
+  return data;
+}
+
+document.getElementById("register").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msg.textContent = "Registering...";
+
+  const f = new FormData(e.target);
+
+  const body = {
+    shopName: f.get("shopName"),
+    ownerName: f.get("ownerName"),
+    email: f.get("email"),
+    password: f.get("password")
+  };
+
+  try {
+    await request("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify(body)
+    });
+
+    msg.textContent = "Account created! Now login.";
+    show("login");
+  } catch (error) {
+    msg.textContent = error.message;
+  }
+});
+
+document.getElementById("login").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msg.textContent = "Logging in...";
+
+  const f = new FormData(e.target);
+
+  try {
+    const data = await request("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({
+        email: f.get("email"),
+        password: f.get("password")
+      })
+    });
+
+    token = data.token;
+
+    if (!token) throw new Error("Login token missing");
+
+    localStorage.setItem("tokendesk_token", token);
+    await refresh();
+  } catch (error) {
+    msg.textContent = error.message;
+  }
+});
+
+async function refresh() {
+  try {
+    const data = await request("/api/shop/me");
+
+    auth.hidden = true;
+    dashboard.hidden = false;
+
+    document.getElementById("shop").textContent =
+      data.shop?.shopName || data.shop?.shop_name || "My Shop";
+
+    document.getElementById("status").textContent =
+      "Account logged in";
+
+    await loadOrders();
+    dashmsg.textContent = "";
+  } catch (error) {
+    logout();
+    msg.textContent = error.message;
+  }
+}
+
+async function loadOrders() {
+  const list = document.getElementById("orders");
+  list.innerHTML = "";
+
+  try {
+    const data = await request("/api/shop/orders");
+    const orders = data.orders || data;
+
+    if (!Array.isArray(orders) || orders.length === 0) {
+      list.innerHTML = "<li>No orders yet</li>";
+      return;
+    }
+
+    orders.forEach(order => {
+      const li = document.createElement("li");
+      li.textContent =
+        `${order.customer_name || order.customerName || "Customer"} — ` +
+        `${order.description || ""} — ${order.status || ""}`;
+      list.appendChild(li);
+    });
+  } catch (error) {
+    dashmsg.textContent = error.message;
+  }
+}
+
+function pay(plan) {
+  dashmsg.textContent =
+    "Payments are not activated yet. Plan selected: " + plan + " days.";
+}
+
+function logout() {
+  token = null;
+  localStorage.removeItem("tokendesk_token");
+
+  dashboard.hidden = true;
+  auth.hidden = false;
+
+  document.getElementById("login").reset();
+  document.getElementById("register").reset();
+  document.getElementById("orders").innerHTML = "";
+  dashmsg.textContent = "";
+}
+
+if (token) {
+  refresh();
+} else {
+  show("login");
+    }
