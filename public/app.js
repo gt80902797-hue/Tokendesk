@@ -1,5 +1,4 @@
-
-const API = "https://tokendesk-web.onrender.com";
+const API = "https://tokendesk.onrender.com";
 const WHATSAPP_NUMBER = "918090279768";
 
 const $ = (id) => document.getElementById(id);
