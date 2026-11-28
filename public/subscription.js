@@ -3,12 +3,14 @@
 
 const API = "https://tokendesk.onrender.com";
 const WHATSAPP_NUMBER = "918090279768";
+const PAYMENT_PHONE = "8090279768";
 
 const $ = (id) => document.getElementById(id);
 
 const authToken = localStorage.getItem("tokendesk_token") || "";
 
-let currentRequest = null;
+let selectedPlan = null;
+let submitting = false;
 
 function showMessage(element, message, type = "") {
   if (!element) return;
@@ -40,7 +42,7 @@ async function api(path, options = {}) {
   return data;
 }
 
-// Check login
+// Login check
 if (!authToken) {
   showMessage(
     $("subStatus"),
@@ -49,87 +51,204 @@ if (!authToken) {
   );
 }
 
-// Select plan and create payment request
-async function choosePlan(planDays, button) {
+// Payment number
+if ($("paymentPhone")) {
+  $("paymentPhone").textContent = PAYMENT_PHONE;
+}
+
+// Select plan ONLY - no request created
+function choosePlan(planDays) {
   if (!authToken) {
     showMessage($("subStatus"), "Please login first.", "error");
     return;
   }
 
+  selectedPlan = Number(planDays);
+
+  const prices = {
+    30: 100,
+    90: 270,
+    365: 999
+  };
+
+  if (!prices[selectedPlan]) {
+    showMessage($("subStatus"), "Invalid plan.", "error");
+    return;
+  }
+
+  // Highlight selected card
+  document.querySelectorAll("[data-card-plan]").forEach((card) => {
+    card.classList.remove("selected");
+  });
+
+  const selectedCard = document.querySelector(
+    `[data-card-plan="${selectedPlan}"]`
+  );
+
+  if (selectedCard) {
+    selectedCard.classList.add("selected");
+  }
+
+  $("paymentBox").classList.remove("hidden");
+
+  $("selectedPlanTitle").textContent =
+    `${selectedPlan}-day subscription`;
+
+  $("selectedPlanDays").textContent =
+    `${selectedPlan} days`;
+
+  $("amount").textContent =
+    `₹${prices[selectedPlan]}`;
+
+  $("utr").value = "";
+
+  $("requestDetails").classList.add("hidden");
+  $("requestCode").textContent = "-";
+
+  showMessage($("requestMessage"), "");
+
+  showMessage(
+    $("subStatus"),
+    "Plan selected. Complete payment and enter your UTR.",
+    "success"
+  );
+
+  $("paymentBox").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+// Submit request ONLY when the WhatsApp button is clicked
+async function submitSubscriptionRequest() {
+  if (!authToken) {
+    showMessage($("subStatus"), "Please login first.", "error");
+    return;
+  }
+
+  if (!selectedPlan) {
+    showMessage(
+      $("requestMessage"),
+      "Please select a subscription plan first.",
+      "error"
+    );
+    return;
+  }
+
+  const utr = $("utr").value.trim();
+
+  if (!utr) {
+    showMessage(
+      $("requestMessage"),
+      "Please enter your UTR / transaction reference.",
+      "error"
+    );
+
+    $("utr").focus();
+    return;
+  }
+
+  if (utr.length < 6 || utr.length > 50) {
+    showMessage(
+      $("requestMessage"),
+      "UTR must be between 6 and 50 characters.",
+      "error"
+    );
+
+    $("utr").focus();
+    return;
+  }
+
+  if (submitting) return;
+
+  submitting = true;
+
+  const button = $("whatsappLink");
   button.disabled = true;
-  showMessage($("subStatus"), "Creating payment request...");
+
+  showMessage(
+    $("requestMessage"),
+    "Submitting your payment request...",
+    ""
+  );
+
+  // Open a temporary tab immediately to avoid popup blocking
+  const whatsappTab = window.open("about:blank", "_blank");
 
   try {
     const request = await api("/api/subscription/requests", {
       method: "POST",
-      body: JSON.stringify({ planDays: Number(planDays) })
+      body: JSON.stringify({
+        planDays: selectedPlan,
+        utr: utr
+      })
     });
 
-    currentRequest = request;
+    const requestCode = request.requestCode;
 
-    $("paymentBox").classList.remove("hidden");
+    $("requestCode").textContent = requestCode;
+    $("requestDetails").classList.remove("hidden");
 
-    $("selectedPlanTitle").textContent =
-      `${request.planDays}-day subscription`;
+    const message = [
+      "Hello TokenDesk, I want to activate my shop subscription.",
+      `Request ID: ${requestCode}`,
+      `Plan: ${request.planDays} days`,
+      `Amount: INR ${request.amount}`,
+      `UPI Transaction Reference / UTR: ${utr}`,
+      "Please verify payment and send my activation code."
+    ].join("\n");
 
-    $("paymentPhone").textContent =
-      request.paymentPhone || "Check payment instructions";
-
-    $("requestCode").textContent = request.requestCode;
-    $("amount").textContent = `₹${request.amount}`;
-    $("utr").value = "";
-
-    updateWhatsAppLink();
+    const whatsappURL =
+      "https://wa.me/" +
+      WHATSAPP_NUMBER +
+      "?text=" +
+      encodeURIComponent(message);
 
     showMessage(
-      $("subStatus"),
-      "Payment request created. Complete payment and enter your UTR.",
+      $("requestMessage"),
+      "Request submitted successfully. Opening WhatsApp...",
       "success"
     );
 
-    $("paymentBox").scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+    showMessage(
+      $("subStatus"),
+      "Your subscription request has been submitted.",
+      "success"
+    );
+
+    // Open WhatsApp only after successful API request
+    if (whatsappTab) {
+      whatsappTab.location.href = whatsappURL;
+    } else {
+      window.location.href = whatsappURL;
+    }
 
   } catch (error) {
-    showMessage($("subStatus"), error.message, "error");
+    if (whatsappTab) {
+      whatsappTab.close();
+    }
+
+    showMessage(
+      $("requestMessage"),
+      error.message || "Unable to submit request.",
+      "error"
+    );
+
   } finally {
+    submitting = false;
     button.disabled = false;
   }
 }
 
-// Update WhatsApp link
-function updateWhatsAppLink() {
-  if (!currentRequest) return;
-
-  const utr = $("utr").value.trim();
-
-  const message = [
-    "Hello TokenDesk, I want to activate my shop subscription.",
-    `Request ID: ${currentRequest.requestCode}`,
-    `Plan: ${currentRequest.planDays} days`,
-    `Amount: INR ${currentRequest.amount}`,
-    `UPI Transaction Reference / UTR: ${utr || "Not entered"}`,
-    "Please verify payment and send my activation code."
-  ].join("\n");
-
-  $("whatsappLink").href =
-    "https://wa.me/" +
-    WHATSAPP_NUMBER +
-    "?text=" +
-    encodeURIComponent(message);
-}
-
-// UTR changes update the WhatsApp message
-$("utr").addEventListener("input", updateWhatsAppLink);
-
-// Plan buttons
+// Plan selection
 document.querySelectorAll(".choose-plan").forEach((button) => {
   button.addEventListener("click", () => {
-    choosePlan(button.dataset.plan, button);
+    choosePlan(button.dataset.plan);
   });
 });
+
+// Final request button
+$("whatsappLink").addEventListener("click", submitSubscriptionRequest);
 
 // Activation code
 $("activateBtn").addEventListener("click", async () => {
@@ -147,7 +266,10 @@ $("activateBtn").addEventListener("click", async () => {
   const button = $("activateBtn");
   button.disabled = true;
 
-  showMessage($("activationMessage"), "Checking activation code...");
+  showMessage(
+    $("activationMessage"),
+    "Checking activation code..."
+  );
 
   try {
     const result = await api("/api/subscription/redeem", {
@@ -173,6 +295,7 @@ $("activateBtn").addEventListener("click", async () => {
       error.message,
       "error"
     );
+
   } finally {
     button.disabled = false;
   }
