@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10243a">
+  <title>TokenDesk | Subscription</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .sub-page {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .sub-header {
+      margin-bottom: 24px;
+    }
+
+    .sub-plans {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .sub-card {
+      padding: 22px;
+      border: 1px solid rgba(128,128,128,.25);
+      border-radius: 18px;
+      text-align: center;
+    }
+
+    .sub-card.featured {
+      border: 2px solid #2563eb;
+    }
+
+    .sub-card .price {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .sub-card button {
+      width: 100%;
+      margin-top: 14px;
+    }
+
+    .payment-box {
+      margin-top: 24px;
+      padding: 20px;
+      border-radius: 18px;
+      border: 1px solid rgba(128,128,128,.25);
+    }
+
+    .payment-qr {
+      width: 220px;
+      max-width: 100%;
+      display: block;
+      margin: 20px auto;
+      border-radius: 12px;
+    }
+
+    .sub-input {
+      width: 100%;
+      box-sizing: border-box;
+      margin: 10px 0;
+    }
+
+    .sub-action {
+      width: 100%;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      text-decoration: none;
+      box-sizing: border-box;
+      margin-top: 12px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      text-decoration: none;
+    }
+
+    .sub-msg {
+      overflow-wrap: anywhere;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">T</span>
+    <span>TokenDesk</span>
+  </a>
+  <span class="top-tag">Subscription</span>
+</header>
+
+<main class="container sub-page">
+
+  <a href="index.html" class="back-link">← Back to Dashboard</a>
+
+  <section class="panel sub-header">
+    <p class="eyebrow">SHOP SUBSCRIPTION</p>
+    <h1>Activate your shop</h1>
+
+    <p class="muted">
+      Select a plan to continue. Payment will be manually verified
+      before activation.
+    </p>
+
+    <p id="subStatus" class="message" role="status"></p>
+  </section>
+
+  <!-- PLANS -->
+  <section class="sub-plans">
+
+    <article class="sub-card">
+      <h2>30 Days</h2>
+      <p class="price">₹100</p>
+      <p class="muted">30-day access</p>
+
+      <button
+        class="primary-btn choose-plan"
+        data-plan="30"
+        type="button">
+        Select Plan
+      </button>
+    </article>
+
+    <article class="sub-card featured">
+      <h2>90 Days</h2>
+      <p class="price">₹270</p>
+      <p class="muted">90-day access</p>
+
+      <button
+        class="primary-btn choose-plan"
+        data-plan="90"
+        type="button">
+        Select Plan
+      </button>
+    </article>
+
+    <article class="sub-card">
+      <h2>365 Days</h2>
+      <p class="price">₹999</p>
+      <p class="muted">365-day access</p>
+
+      <button
+        class="primary-btn choose-plan"
+        data-plan="365"
+        type="button">
+        Select Plan
+      </button>
+    </article>
+
+  </section>
+
+  <!-- PAYMENT -->
+  <section id="paymentBox" class="panel payment-box hidden">
+
+    <p class="eyebrow">PAYMENT DETAILS</p>
+    <h2 id="selectedPlanTitle">Complete your payment</h2>
+
+    <p class="muted">
+      Scan the QR code below using your UPI app and verify
+      the receiver details before paying.
+    </p>
+
+    <!-- Replace payment-qr.png with your actual QR image -->
+    <img
+      src="payment-qr.png"
+      alt="Payment QR code"
+      class="payment-qr">
+
+    <div class="checkout-details">
+
+      <p>
+        <strong>Payment number:</strong>
+        <span id="paymentPhone">Loading...</span>
+      </p>
+
+      <p>
+        <strong>Request ID:</strong>
+        <span id="requestCode">-</span>
+      </p>
+
+      <p>
+        <strong>Amount:</strong>
+        <span id="amount">-</span>
+      </p>
+
+    </div>
+
+    <label for="utr">
+      UPI Transaction Reference / UTR
+    </label>
+
+    <input
+      id="utr"
+      class="sub-input"
+      type="text"
+      maxlength="50"
+      autocomplete="off"
+      placeholder="Enter transaction reference">
+
+    <p class="muted small">
+      UTR is only included in your WhatsApp message. It is not
+      stored by this page in the TokenDesk backend.
+    </p>
+
+    <a
+      id="whatsappLink"
+      class="primary-btn sub-action"
+      href="#"
+      target="_blank"
+      rel="noopener noreferrer">
+      Send payment request on WhatsApp
+    </a>
+
+    <p class="notice">
+      Your subscription is not activated automatically. Payment
+      will be verified manually and an activation code will
+      be provided after verification.
+    </p>
+
+  </section>
+
+  <!-- ACTIVATION -->
+  <section class="panel payment-box">
+
+    <p class="eyebrow">ACTIVATION</p>
+    <h2>Have an activation code?</h2>
+
+    <p class="muted">
+      Enter the activation code provided after payment verification.
+    </p>
+
+    <input
+      id="activationCode"
+      class="sub-input"
+      type="text"
+      maxlength="16"
+      autocomplete="one-time-code"
+      placeholder="16-character activation code">
+
+    <button
+      id="activateBtn"
+      class="primary-btn sub-action"
+      type="button">
+      Activate Subscription
+    </button>
+
+    <p id="activationMessage" class="message" role="status"></p>
+
+  </section>
+
+</main>
+
+<script src="subscription.js" defer></script>
+
+</body>
+</html>
