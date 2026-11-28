@@ -4,39 +4,70 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#10243a">
-  <title>TokenDesk | Admin payment verification</title>
-  <link rel="stylesheet" href="style.css">
+  <title>TokenDesk | Admin Payment Verification</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#172b42;background:#f3f6fa}
+    *{box-sizing:border-box}body{margin:0}.top{background:#10243a;color:#fff;padding:18px 16px}
+    .top-inner,main{width:min(960px,calc(100% - 28px));margin:auto}.brand{font-weight:800;font-size:20px}
+    .sub{color:#b9c9d9;font-size:13px;margin-top:4px}main{padding:24px 0 48px}
+    .card{background:#fff;border:1px solid #dce4ed;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 5px 18px #152b4210}
+    h1{font-size:24px;margin:0 0 8px}h2{font-size:18px;margin:0 0 14px}
+    p{line-height:1.5}.muted{color:#617286;font-size:14px}
+    label{display:block;font-weight:650;font-size:14px;margin:12px 0 6px}
+    input{width:100%;padding:12px;border:1px solid #cbd6e2;border-radius:10px;font:inherit}
+    button{border:0;border-radius:10px;padding:11px 15px;font:inherit;font-weight:700;cursor:pointer}
+    button:disabled{opacity:.55;cursor:not-allowed}.primary{background:#1769aa;color:#fff}
+    .secondary{background:#eaf1f8;color:#173b5c}.danger{background:#fff0ef;color:#a52c25}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .message{padding:12px;border-radius:10px;margin-top:12px;background:#eef4fa;color:#25445f;white-space:pre-wrap}
+    .error{background:#fff0ef;color:#9c2922}.success{background:#eaf8ef;color:#17633a}
+    .request{border:1px solid #dce4ed;border-radius:13px;padding:15px;margin-top:12px}
+    .request-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .code{font-weight:800;letter-spacing:.5px;color:#135a91}
+    .details{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:12px}
+    .detail{background:#f6f8fb;border-radius:9px;padding:10px;overflow-wrap:anywhere}
+    .detail small{display:block;color:#63758a;margin-bottom:4px}
+    .empty{text-align:center;padding:24px;color:#66788a}
+    .warning{border-left:4px solid #d99a22;background:#fff8e8;padding:12px;border-radius:8px;font-size:13px}
+    @media(max-width:520px){.card{padding:16px}h1{font-size:21px}.actions button{flex:1}}
+  </style>
   <script src="admin.js" defer></script>
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="index.html"><span class="brand-mark">T</span><span>TokenDesk</span></a>
-    <span class="top-tag">Private admin area</span>
-  </header>
-  <main class="narrow-container">
-    <section class="panel">
-      <p class="eyebrow">OWNER ONLY</p>
+  <header class="top"><div class="top-inner">
+    <div class="brand">TokenDesk · Admin</div>
+    <div class="sub">OWNER ONLY · Manual payment verification</div>
+  </div></header>
+  <main>
+    <section class="card">
       <h1>Payment verification</h1>
-      <p class="muted">Use this page only after checking that the exact payment has arrived in the receiving UPI/bank account. Never approve based only on a screenshot or a WhatsApp claim.</p>
-      <form id="adminLoginForm" class="form-stack">
-        <label>Admin secret<input id="adminSecret" type="password" autocomplete="off" required minlength="32" placeholder="Enter the private ADMIN_SECRET"></label>
-        <button class="primary-btn" type="submit">Open pending requests</button>
+      <p class="muted">Enter the private Admin Secret configured in Render. It is kept only in this page's memory and is not saved in browser storage.</p>
+      <form id="adminLoginForm">
+        <label for="adminSecret">Admin secret</label>
+        <input id="adminSecret" type="password" autocomplete="off" required placeholder="Enter your admin secret">
+        <div class="actions">
+          <button class="primary" type="submit" id="openRequestsBtn">Open pending requests</button>
+          <button class="secondary" type="button" id="clearAdminBtn">Clear secret</button>
+        </div>
       </form>
-      <p id="adminMessage" class="message" role="status"></p>
+      <div id="adminMessage" class="message" role="status" aria-live="polite" hidden></div>
     </section>
-    <section id="requestsPanel" class="panel hidden">
-      <div class="section-heading"><div><p class="eyebrow">PENDING PAYMENTS</p><h2>Subscription requests</h2></div><button id="reloadRequests" class="secondary-btn" type="button">Refresh</button></div>
-      <div id="requestsList" class="orders-list"><p class="muted">No requests loaded.</p></div>
+
+    <section class="card">
+      <div class="request-head">
+        <div><h2>Pending subscription requests</h2><p class="muted">Check the UTR against the actual credit in your receiving bank/UPI account before issuing a code.</p></div>
+        <button class="secondary" type="button" id="refreshRequestsBtn">Refresh</button>
+      </div>
+      <div class="warning">Never approve based only on a screenshot or WhatsApp claim. Verify the exact amount and UTR in your account first. Activation codes expire after 30 minutes and are shown only once.</div>
+      <div id="requestsList"><div class="empty">Admin authentication ke baad requests yahan dikhenge.</div></div>
     </section>
-    <section id="issuedPanel" class="panel hidden">
-      <p class="eyebrow">ONE-TIME ACTIVATION CODE</p>
-      <h2>Code generated</h2>
-      <p class="muted">Copy this code and send it to the matching shop owner on WhatsApp. This is the only time the raw code is displayed.</p>
-      <div class="admin-code" id="issuedCode"></div>
-      <button id="copyIssuedCode" class="primary-btn" type="button">Copy activation code</button>
-      <p id="issuedDetails" class="message"></p>
+
+    <section class="card" id="activationResultCard" hidden>
+      <h2>Activation code issued</h2>
+      <p class="muted">Is code ko sirf isi shop owner ko bhejo. Code 30 minutes mein expire hoga.</p>
+      <div id="activationResult" class="message success"></div>
+      <div class="actions"><button class="secondary" id="copyActivationBtn" type="button">Copy activation code</button></div>
     </section>
-    <p class="footer-note">Do not share your admin secret. It is not part of the website source and must stay in Render environment variables.</p>
   </main>
 </body>
 </html>
